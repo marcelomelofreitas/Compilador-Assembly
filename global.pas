@@ -37,9 +37,21 @@ type
     ASM_REGISTER,
     ASM_MNEMONIC,
     LABEL_IDENTIFIER,
-    VARIABLE_IDENTIFIER,
+
+    BYTE,
+    WORD_SIZE,
+    VAR_DWORD_SIZE,
+    VAR_FWORD_SIZE,
+    VAR_QWORD_SIZE,
+    VAR_TBYTE_SIZE,
+    VAR_DQWORD_SIZE,
+    VAR_XMMWORD_SIZE,
+    VAR_YMMWORD_SIZE,
+    VAR_ZMMWORD_SIZE,
+
+    VAR_IDENTIFIER,
     SPECIAL_SYMBOL,
-    CONSTANT_IDENTIFIER
+    CONST_IDENTIFIER
   );
 
 
@@ -50,7 +62,7 @@ type
     Spelling: PAnsiChar;
     Kind: TTokenKind;
     Address: Integer;
-    Size: Integer;
+    Size: TAsmOperandSize;
     Reg: TAsmRegister;
     Mnemonic: TAsmMnemonic;
     Next: TTokenPtr;

@@ -854,7 +854,7 @@ type
     X86_ENDING // marque o fim da lista de Mnemonics
 );
 
-  TAsmOperandType = (INVALID, Reg, Imm, Mem);
+  TAsmOperandType = (INVALID, Reg, Imm, Mem, MemVar);
 
   TAsmRegister =
     (
@@ -916,7 +916,7 @@ type
 //        ENDING
 //    );
 
-  TAsmOpSize = (
+  TAsmOperandSize = (
     UNSET,     // No size set
     BYTE,      // Byte
     WORD,      // Word
@@ -949,7 +949,7 @@ type
   end;
 
   TAsmOperand = record
-    Size: TAsmOpSize;
+    Size: TAsmOperandSize;
     case Type_: TAsmOperandType of
       TAsmOperandType.Reg: (Reg: TAsmRegister);
       TAsmOperandType.Imm: (Imm: TAsmValue);
@@ -1003,14 +1003,13 @@ type
   TAsmRegisterDef = record
     Name: AnsiString;
     Type_: TAsmRegisterType;
-    Size: TAsmOpSize;
+    Size: TAsmOperandSize;
     Arch: TAsmArch;
     Documentation: string;
   end;
 
   TAsmOpSizeTableItem = record
     Name: string;
-    Size: TAsmOpSize;
     Bytes: Integer;
     Bits: Integer;
   end;
@@ -1018,44 +1017,45 @@ type
 
 const
   AsmRegisterTableDef: array[TAsmRegister] of TAsmRegisterDef = (
-     (Name: 'NONE'; Type_: TAsmRegisterType.NONE; Size: TAsmOpSize.UNSET; Arch: TAsmArch.NONE;  Documentation: ''),
-     (Name: 'RAX'; Type_: TAsmRegisterType.BIT64; Size: TAsmOpSize.QWORD; Arch: TAsmArch.x64;  Documentation: ''),
-     (Name: 'EAX'; Type_: TAsmRegisterType.BIT32; Size: TAsmOpSize.DWORD; Arch: TAsmArch.x386;  Documentation: ''),
-     (Name: 'AX';  Type_: TAsmRegisterType.BIT16; Size: TAsmOpSize.WORD; Arch: TAsmArch.x8086; Documentation: ''),
-     (Name: 'AH';  Type_: TAsmRegisterType.BIT8;  Size: TAsmOpSize.BYTE;  Arch: TAsmArch.x8086; Documentation: ''),
-     (Name: 'AL';  Type_: TAsmRegisterType.BIT8;  Size: TAsmOpSize.BYTE;  Arch: TAsmArch.x8086; Documentation: ''),
+     (Name: 'NONE'; Type_: TAsmRegisterType.NONE; Size: TAsmOperandSize.UNSET; Arch: TAsmArch.NONE;  Documentation: ''),
+     (Name: 'RAX'; Type_: TAsmRegisterType.BIT64; Size: TAsmOperandSize.QWORD; Arch: TAsmArch.x64;  Documentation: ''),
+     (Name: 'EAX'; Type_: TAsmRegisterType.BIT32; Size: TAsmOperandSize.DWORD; Arch: TAsmArch.x386;  Documentation: ''),
+     (Name: 'AX';  Type_: TAsmRegisterType.BIT16; Size: TAsmOperandSize.WORD; Arch: TAsmArch.x8086; Documentation: ''),
+     (Name: 'AH';  Type_: TAsmRegisterType.BIT8;  Size: TAsmOperandSize.BYTE;  Arch: TAsmArch.x8086; Documentation: ''),
+     (Name: 'AL';  Type_: TAsmRegisterType.BIT8;  Size: TAsmOperandSize.BYTE;  Arch: TAsmArch.x8086; Documentation: ''),
 
-     (Name: 'RCX'; Type_: TAsmRegisterType.BIT64; Size: TAsmOpSize.QWORD; Arch: TAsmArch.x64;  Documentation: ''),
-     (Name: 'ECX'; Type_: TAsmRegisterType.BIT32; Size: TAsmOpSize.DWORD; Arch: TAsmArch.x386;  Documentation: ''),
-     (Name: 'CX';  Type_: TAsmRegisterType.BIT16; Size: TAsmOpSize.WORD; Arch: TAsmArch.x8086; Documentation: ''),
-     (Name: 'CH';  Type_: TAsmRegisterType.BIT8;  Size: TAsmOpSize.BYTE;  Arch: TAsmArch.x8086; Documentation: ''),
-     (Name: 'CL';  Type_: TAsmRegisterType.BIT8;  Size: TAsmOpSize.BYTE;  Arch: TAsmArch.x8086; Documentation: ''),
+     (Name: 'RCX'; Type_: TAsmRegisterType.BIT64; Size: TAsmOperandSize.QWORD; Arch: TAsmArch.x64;  Documentation: ''),
+     (Name: 'ECX'; Type_: TAsmRegisterType.BIT32; Size: TAsmOperandSize.DWORD; Arch: TAsmArch.x386;  Documentation: ''),
+     (Name: 'CX';  Type_: TAsmRegisterType.BIT16; Size: TAsmOperandSize.WORD; Arch: TAsmArch.x8086; Documentation: ''),
+     (Name: 'CH';  Type_: TAsmRegisterType.BIT8;  Size: TAsmOperandSize.BYTE;  Arch: TAsmArch.x8086; Documentation: ''),
+     (Name: 'CL';  Type_: TAsmRegisterType.BIT8;  Size: TAsmOperandSize.BYTE;  Arch: TAsmArch.x8086; Documentation: ''),
 
-     (Name: 'RDX'; Type_: TAsmRegisterType.BIT64; Size: TAsmOpSize.QWORD; Arch: TAsmArch.X64;  Documentation: ''),
-     (Name: 'EDX'; Type_: TAsmRegisterType.BIT32; Size: TAsmOpSize.DWORD; Arch: TAsmArch.x386;  Documentation: ''),
-     (Name: 'DX';  Type_: TAsmRegisterType.BIT16; Size: TAsmOpSize.WORD; Arch: TAsmArch.x8086; Documentation: ''),
-     (Name: 'DH';  Type_: TAsmRegisterType.BIT8;  Size: TAsmOpSize.BYTE;  Arch: TAsmArch.x8086; Documentation: ''),
-     (Name: 'DL';  Type_: TAsmRegisterType.BIT8;  Size: TAsmOpSize.BYTE;  Arch: TAsmArch.x8086; Documentation: ''),
+     (Name: 'RDX'; Type_: TAsmRegisterType.BIT64; Size: TAsmOperandSize.QWORD; Arch: TAsmArch.X64;  Documentation: ''),
+     (Name: 'EDX'; Type_: TAsmRegisterType.BIT32; Size: TAsmOperandSize.DWORD; Arch: TAsmArch.x386;  Documentation: ''),
+     (Name: 'DX';  Type_: TAsmRegisterType.BIT16; Size: TAsmOperandSize.WORD; Arch: TAsmArch.x8086; Documentation: ''),
+     (Name: 'DH';  Type_: TAsmRegisterType.BIT8;  Size: TAsmOperandSize.BYTE;  Arch: TAsmArch.x8086; Documentation: ''),
+     (Name: 'DL';  Type_: TAsmRegisterType.BIT8;  Size: TAsmOperandSize.BYTE;  Arch: TAsmArch.x8086; Documentation: ''),
 
-     (Name: 'RBX'; Type_: TAsmRegisterType.BIT64; Size: TAsmOpSize.QWORD; Arch: TAsmArch.x64;  Documentation: ''),
-     (Name: 'EBX'; Type_: TAsmRegisterType.BIT32; Size: TAsmOpSize.DWORD; Arch: TAsmArch.x386;  Documentation: ''),
-     (Name: 'BX';  Type_: TAsmRegisterType.BIT16; Size: TAsmOpSize.WORD; Arch: TAsmArch.x8086; Documentation: ''),
-     (Name: 'BH';  Type_: TAsmRegisterType.BIT8;  Size: TAsmOpSize.BYTE;  Arch: TAsmArch.x8086; Documentation: ''),
-     (Name: 'BL';  Type_: TAsmRegisterType.BIT8;  Size: TAsmOpSize.BYTE;  Arch: TAsmArch.x8086; Documentation: '')
+     (Name: 'RBX'; Type_: TAsmRegisterType.BIT64; Size: TAsmOperandSize.QWORD; Arch: TAsmArch.x64;  Documentation: ''),
+     (Name: 'EBX'; Type_: TAsmRegisterType.BIT32; Size: TAsmOperandSize.DWORD; Arch: TAsmArch.x386;  Documentation: ''),
+     (Name: 'BX';  Type_: TAsmRegisterType.BIT16; Size: TAsmOperandSize.WORD; Arch: TAsmArch.x8086; Documentation: ''),
+     (Name: 'BH';  Type_: TAsmRegisterType.BIT8;  Size: TAsmOperandSize.BYTE;  Arch: TAsmArch.x8086; Documentation: ''),
+     (Name: 'BL';  Type_: TAsmRegisterType.BIT8;  Size: TAsmOperandSize.BYTE;  Arch: TAsmArch.x8086; Documentation: '')
   );
 
-  AsmOpSizeTable: array[TAsmOpsize.BYTE..TAsmOpsize._32_64] of TAsmOpSizeTableItem = (
-     (Name: 'byte'; Size: TAsmOpsize.BYTE; Bytes: 1; Bits: 8),
-     (Name: 'word'; Size: TAsmOpsize.WORD; Bytes: 2; Bits: 16),
-     (Name: 'dword'; Size: TAsmOpsize.DWORD; Bytes: 4; Bits: 32),
-     (Name: 'fword'; Size: TAsmOpsize.FWORD; Bytes: 6; Bits: 48),
-     (Name: 'qword'; Size: TAsmOpsize.QWORD; Bytes: 8; Bits: 64),
-     (Name: 'tbyte'; Size: TAsmOpsize.TBYTE; Bytes: 10; Bits: 80),
-     (Name: 'dqword'; Size: TAsmOpsize.DQWORD; Bytes: 16; Bits: 128),
-     (Name: 'xmmword'; Size: TAsmOpsize.xmmword; Bytes: 16; Bits: 128),
-     (Name: 'ymmword'; Size: TAsmOpsize.YMMWORD; Bytes: 32; Bits: 256),
-     (Name: 'zmmword'; Size: TAsmOpsize.ZMMWORD; Bytes: 64; Bits: 512),
-     (Name: '32_64'; Size: TAsmOpsize._32_64; Bytes: 0; Bits: 0)
+  AsmOpSizeTable: array[TAsmOperandsize] of TAsmOpSizeTableItem = (
+     (Name: 'unset'; Bytes: 0; Bits: 0),
+     (Name: 'byte'; Bytes: 1; Bits: 8),
+     (Name: 'word'; Bytes: 2; Bits: 16),
+     (Name: 'dword'; Bytes: 4; Bits: 32),
+     (Name: 'fword'; Bytes: 6; Bits: 48),
+     (Name: 'qword'; Bytes: 8; Bits: 64),
+     (Name: 'tbyte'; Bytes: 10; Bits: 80),
+     (Name: 'dqword'; Bytes: 16; Bits: 128),
+     (Name: 'xmmword'; Bytes: 16; Bits: 128),
+     (Name: 'ymmword'; Bytes: 32; Bits: 256),
+     (Name: 'zmmword'; Bytes: 64; Bits: 512),
+     (Name: '32_64'; Bytes: 0; Bits: 0)
   );
 
 

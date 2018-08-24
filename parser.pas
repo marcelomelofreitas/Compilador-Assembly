@@ -18,25 +18,27 @@ uses
   AsmParserInstruction,
   AsmInstruction;
 
-function get_size_of_var(var_name: PAnsiChar): Integer;
+function GetSizeOfVariable(var_name: PAnsiChar): TAsmOperandSize;
 var
   len: integer;
   count: Integer;
   split_var: TArray<PAnsiChar>;
 begin
 	len := strlen(var_name);
+
 	if (len = 1) then
-		Exit(1)
+		Exit(TAsmOperandSize.BYTE)
 	else if (len > 3) then
 	begin
 		count := 0;
 		split_var := splitString(var_name, '[', @count);
 		if (count > 1) then
 		begin
-			Exit(Ord(split_var[1][0]));
+//			Exit(Ord(split_var[1][0]));
 		end;
 	end;
-	Result := -1;
+
+	Result := TAsmOperandSize.UNSET;
 end;
 
 function const_statement(sub_instruction: PAnsiChar; constant_start_address: Integer): Integer;
@@ -52,7 +54,7 @@ var
 begin
 	TokenPtr := AllocMem(sizeof(TToken));
 	TokenPtr^.Address := constant_start_address;
- 	TokenPtr^.size := 0;
+ 	TokenPtr^.size := TAsmOperandSize.UNSET;
  	TokenPtr^.next := nil;
 
 	if not (strstr(sub_instruction, '=') = nil) then
@@ -86,26 +88,26 @@ end;
 
 function var_statement(sub_instruction: PAnsiChar; start_address: Integer): Integer;
 var
-  var_name: PAnsiChar;
-  var_size: Integer;
+  VariableName: PAnsiChar;
+  var_size: TAsmOperandSize;
   TokenPtr: TTokenPtr;
 begin
-  var_name := sub_instruction;
-	var_size := get_size_of_var(var_name);
+  VariableName := sub_instruction;
+	var_size := GetSizeOfVariable(VariableName);
 
-	if (var_size = -1) then
-		Error('Falha na declaracao do tamanho da variavel: [%s].'#10, var_name);
+	if (var_size = TAsmOperandSize.UNSET) then
+		Error('Falha na declaracao do tamanho da variavel: [%s].'#10, VariableName);
 
 	TokenPtr := AllocMem(sizeof(TToken));
-	TokenPtr^.Spelling := AllocMem(sizeof(AnsiChar) * (strlen(var_name) + 1));
+	TokenPtr^.Spelling := AllocMem(sizeof(AnsiChar) * (strlen(VariableName) + 1));
 	TokenPtr^.Address := start_address;
  	TokenPtr^.size := var_size;
  	TokenPtr^.next := nil;
 
-	strcpy(TokenPtr^.Spelling, var_name);
-  insertIntoSymbolTable(TokenPtr);
+	strcpy(TokenPtr^.Spelling, VariableName);
+  InsertIntoSymbolTable(TokenPtr);
 
-	Result := TokenPtr^.Address + TokenPtr^.size;
+	Result := TokenPtr^.Address + AsmOpSizeTable[TokenPtr^.size].Bytes;
 end;
 
 
@@ -167,7 +169,6 @@ end;
 procedure asm_mnemonic(TokenPtr: TTokenPtr; var split_instruction: TArray<PAnsiChar>; var split_instr_count: Integer);
 var
   new_instruction: TAsmInstructionPtr;
-  LabelPtr: TLabelItemPtr;
   i: Integer;
 begin
 	new_instruction := AllocMem(sizeof(TAsmInstruction));

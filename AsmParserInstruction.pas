@@ -13,6 +13,10 @@ function AsmParseString(Instruction: TAsmInstructionPtr): Boolean;
 
 implementation
 
+uses
+  hash,
+  global;
+
 type
   TAsmParserTokensPtr = ^TAsmParserTokens;
   TAsmParserTokens = array[0..7] of array[0..63] of AnsiChar;
@@ -150,7 +154,7 @@ begin
     Result := TAsmRegister(Ord(Index));
 end;
 
-function RegGetSize(const Reg: TAsmRegister): TAsmOpSize;
+function RegGetSize(const Reg: TAsmRegister): TAsmOperandSize;
 begin
   Result := AsmRegisterTableDef[Reg].Size;
 end;
@@ -172,6 +176,18 @@ begin
     Result := True;
 end;
 
+function ConstOrVarIdentifierFromString(Text: PAnsiChar; var TokenPtr: TTokenPtr): Boolean;
+begin
+  TokenPtr := SearchInSymbolTable(Text);
+
+  if (TokenPtr = nil) then
+    Exit(False);
+
+  if not (TokenPtr^.Kind in [TTokenKind.VAR_IDENTIFIER, TTokenKind.CONST_IDENTIFIER]) then
+    Exit(False);
+
+  Result := True;
+end;
 
 function ImmFromString(Text: PAnsiChar; var Value: UInt64): Boolean;
 var
@@ -197,7 +213,7 @@ begin
   case tolower(text^) of
     'x': begin // Hexadecimal
          Inc(Text);
-         if not convertNumber(text, value, 16) then    //entendi minha vida inteira agora com a base 16 que tive que usar, viver a vida inteira com a base 10 no dia a dia faz a gente achar e só existe ela rss
+         if not ConvertNumber(text, value, 16) then
            Exit(false);
     end;
   end;
@@ -208,7 +224,7 @@ begin
   Result := True;
 end;
 
-function OpsizeFromValue(Value: Int64): TAsmOpSize;
+function OpsizeFromValue(Value: Int64): TAsmOperandSize;
 var
   SetBitStart: UInt32;
   temp: UInt64;
@@ -262,21 +278,22 @@ begin
 
     // Converter o último bit definido em um valor de tamanho
     if(unsetBitStart < 8) then
-        Result := TAsmOpSize.BYTE
+        Result := TAsmOperandSize.BYTE
     else if(unsetBitStart < 16)  then
-        Result := TAsmOpSize.WORD
+        Result := TAsmOperandSize.WORD
     else if(unsetBitStart < 32)  then
-        Result := TAsmOpSize.DWORD
+        Result := TAsmOperandSize.DWORD
     else if(unsetBitStart < 64)  then
-        Result := TAsmOpSize.QWORD
+        Result := TAsmOperandSize.QWORD
     else
-        Result := TAsmOpSize.UNSET;
+        Result := TAsmOperandSize.UNSET;
 end;
 
 function AnalyzeOperand(Instruction: TAsmInstructionPtr; const Value: PAnsiChar; var Operand: TAsmOperand): Boolean;
 var
   RegisterValue: TAsmRegister;
   ImmValue: UInt64;
+  TokenPtr: TTokenPtr;
 begin
 
   if (Value = nil) then
@@ -310,7 +327,16 @@ begin
   begin
     // Segment selector
   end
-  else if ImmFromString(Value, ImmValue) then
+  else if ConstOrVarIdentifierFromString(Value, TokenPtr) then
+  begin
+    // Var or Const
+
+    Operand.Type_      := TAsmOperandType.MemVar;
+    Operand.Size       := TokenPtr.Size;
+    Operand.Imm.Signed := (Value[0] = '-');
+    Operand.Imm.Value := ImmValue;
+  end
+  else if isdigit(Value^) and ImmFromString(Value, ImmValue) then
   begin
     // Immediate
     Operand.Type_      := TAsmOperandType.Imm;
@@ -318,14 +344,12 @@ begin
     Operand.Size       := OpsizeFromValue(ImmValue);
     Operand.Imm.Signed := (Value[0] = '-');
     Operand.Imm.Value := ImmValue;
-
   end
   else
   begin
     // Unknown
     Operand.Type_ := TAsmOperandType.INVALID;
-    //sprintf(Parse.error, 'Identificador de operando desconhecido '%s'', Value);
-    Exit(false);
+    Error('Identificador de operando desconhecido: "%s"', Value);
   end;
 
   Result := True;

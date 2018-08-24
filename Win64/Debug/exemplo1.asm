@@ -4,11 +4,11 @@ const ONE = 1
 var NOME[4]
 
 main:
-    MOV CX, 12
-    MOV DX, ONE
-    MOV EX, ONE
+    MOV ECX, 12
+    MOV EDX, ONE
+    MOV ECX, ONE
 
 CHECK:
-    MUL EX, AX
-    SUB AX, DX
+    MUL ECX, ECX
+    SUB EAX, EDX
     JP CHECK

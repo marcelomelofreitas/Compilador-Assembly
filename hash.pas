@@ -36,7 +36,7 @@ begin
 		Exit(false);
 	end;
 
-  if TokenPtr.Kind = TTokenKind.VARIABLE_IDENTIFIER then
+  if TokenPtr.Kind = TTokenKind.VAR_IDENTIFIER then
   begin
 	  if (duplicate_variable_check(TokenPtr.Spelling)) then
 		  Error('Nome de variavel duplicado: %s', TokenPtr.Spelling);
