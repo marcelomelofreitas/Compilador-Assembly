@@ -1,0 +1,15 @@
+const ZERO = 0
+const ONE = 1
+
+var NOME[4]
+
+main:
+    MOV CX, ZERO
+    MOV DX, ONE
+    MOV EX, ONE
+
+CHECK:
+    	MUL EX,EX,AX
+    	SUB AX,AX,DX
+    	JUMP CHECK
+

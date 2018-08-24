@@ -1,0 +1,8 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<BorlandProject>
+	<Transactions>
+    <Transaction>2018/08/01 15:13:28.000.824,a:\Documents\Embarcadero\Studio\Projects\Project6.dproj=a:\Documents\Embarcadero\Studio\Projects\Project6.dproj</Transaction>
+    <Transaction>2018/08/20 17:52:11.000.610,a:\Documents\Embarcadero\Studio\Projects\Project6.dproj=T:\PlataformDsv\src\trunk\compilador\Assembly\Project6.dproj</Transaction>
+    <Transaction>2018/08/20 17:52:33.000.767,T:\PlataformDsv\src\trunk\compilador\Assembly\Project6.dproj=T:\PlataformDsv\src\trunk\compilador\Assembly\ac.dproj</Transaction>
+  </Transactions>
+</BorlandProject>
